@@ -175,11 +175,11 @@ int main(int argc, char* argv[]) {
                 if ((*it)->current_workspace != (*ws)->name) {
                     cout << "Switching from " << (*ws)->name << endl;
                     cout << "Switching to " << (*it)->current_workspace << endl;
-                    i3.send_command("workspace " + (*it)->current_workspace);
+                    i3.send_command("workspace number " + (*it)->current_workspace);
                 }
 
                 cout << "Switching to " << ws_name << endl;
-                i3.send_command("workspace " + ws_name);
+                i3.send_command("workspace number " + ws_name);
             }
         }
 
@@ -188,10 +188,10 @@ int main(int argc, char* argv[]) {
 
     current.resize(distance(current.begin(), end));
 
-    string command = "workspace ";
+    string command = "workspace number ";
 
     if (shift)
-        command = "move window to workspace ";
+        command = "move window to workspace number ";
 
     // switch outputs
     if (active.size() > 1 && mode == "out") {
@@ -227,7 +227,7 @@ int main(int argc, char* argv[]) {
         // if moving a window to a new output, this will be on a visible
         // workspace, so focus that workspace after moving the window there
         if (shift)
-            i3.send_command("workspace " + n->current_workspace);
+            i3.send_command("workspace number " + n->current_workspace);
     } else if (mode == "ws") {
     // switch (or create) workspasces :)
         auto cur = find(current.begin(), current.end(), *ws);
