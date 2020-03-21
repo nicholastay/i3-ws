@@ -5,6 +5,7 @@
 #include <cstring>
 #include <iostream>
 #include <sstream>
+#include <cmath>
 
 
 using namespace std;
@@ -156,21 +157,35 @@ int main(int argc, char* argv[]) {
             return workspace->output == (*current_output)->name; });
 
     if (init) {
+        bool stale = false;
         for (auto it = active.begin(); it != active.end(); ++it) {
             string ws_name;
             stringstream ss;
             ss << (distance(active.begin(), it) + 1) * 100 + 1;
             ss >> ws_name;
 
-            // get focused workspace
             workspaces = i3.get_workspaces();
+            cout << ws_name << " " << (*it)->name << endl;
+
+            // check for stale workspaces on wrong output
+            // useful for laptop switching
+            for (auto wss = workspaces.begin(); wss != workspaces.end(); ++wss) {
+                if (floor((*wss)->num / 100) == (distance(active.begin(), it) + 1) && (*wss)->output != (*it)->name) {
+                    cout << "Stale: Moving " << (*wss)->num << " to " << (*it)->name << endl;
+                    i3.send_command("workspace " + (*wss)->name);
+                    i3.send_command("move workspace to output " + (*it)->name);
+                    stale = true;
+                }
+            }
+
+            // get focused workspace
             ws = find_if(
                 workspaces.begin(),
                 workspaces.end(),
                 [](auto workspace) {
                     return workspace->focused; });
 
-            cout << ws_name << " " << (*it)->name << endl;
+
             if ((*it)->current_workspace != ws_name) {
                 if ((*it)->current_workspace != (*ws)->name) {
                     cout << "Switching from " << (*ws)->name << endl;
@@ -182,6 +197,10 @@ int main(int argc, char* argv[]) {
                 i3.send_command("workspace number " + ws_name);
             }
         }
+
+        // need reload to ensure no glitchy display
+        if (stale)
+            i3.send_command("reload");
 
         return 0;
     }
